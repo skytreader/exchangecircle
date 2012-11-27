@@ -47,16 +47,34 @@ TODO Must send another email to the guest that rsvp is confirmed.
 function confirm($connection, $invitation_id, $confirmation_code){
 	// Get the confirmation deadline and check server date if it is not yet over.
 	$confirmation_date_query = mysqli_real_escape_string("SELECT confirmation_deadline FROM event_settings LIMIT 1;");
-	$query_result = mysqli_query($confirmation_date_query);
+	$query_result = mysqli_query($connection, $confirmation_date_query);
+	$result_details = mysqli_fetch_assoc($query_result);
+	$date_str = $result_details["confirmation_deadline"];
+	$actual_date = strtotime($date_str);
 
-	// We can safely assume that the invitation id and confirmation code is
-	// already in the DB iff it is a valid combination.
-	$check_query = mysqli_real_escape_string("SELECT * FROM invited WHERE invitation_id = '$invitation_id' AND confirmation_code = '$confirmation_code' LIMIT 1;");
-	return mysqli_query($connection, $check_query);
+	if($actual_date < time()){
+		// We can safely assume that the invitation id and confirmation code is
+		// already in the DB iff it is a valid combination.
+		$check_query = mysqli_real_escape_string("SELECT * FROM invited WHERE invitation_id = '$invitation_id' AND confirmation_code = '$confirmation_code' LIMIT 1;");
+		return mysqli_query($connection, $check_query);
+	} else{
+		return false;
+	}
 }
 
 /**
+Assigns exchange-gift pairings using all guests who confirmed.
 
+Returns an associative array where keys and values are invitation ids in the database.
+The person associated with the key invitation id WILL GIVE to the person associated
+with the value invitation id.
 */
+function assign_pairings($connection){
+	// A guest has confirmed iff the date_confirmed field is not null
+	$confirmed_guests_query = mysqli_real_escape_string("SELECT invitation_id FROM invited WHERE date_confirmed IS NOT NULL;");
+	$confirmed_guests_result = mysqli_query($confirmed_guests_query);
+	$confirmed_guests
+	//
+}
 
 ?>
