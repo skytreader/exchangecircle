@@ -65,16 +65,42 @@ function confirm($connection, $invitation_id, $confirmation_code){
 /**
 Assigns exchange-gift pairings using all guests who confirmed.
 
-Returns an associative array where keys and values are invitation ids in the database.
-The person associated with the key invitation id WILL GIVE to the person associated
-with the value invitation id.
+Returns an associative array of the following format:
+  (1) The key is also an associative array with two keys:
+      "invitation_id" and "email".
+  (2) The value is an integer, containing an invitation_id.
+
+The person corresponding to the invitation_id in the key WILL GIVE
+to the person corresponding to the invitation_id in the value.
 */
 function assign_pairings($connection){
 	// A guest has confirmed iff the date_confirmed field is not null
-	$confirmed_guests_query = mysqli_real_escape_string("SELECT invitation_id FROM invited WHERE date_confirmed IS NOT NULL;");
+	$confirmed_guests_query = mysqli_real_escape_string("SELECT invitation_id, email FROM invited WHERE date_confirmed IS NOT NULL;");
 	$confirmed_guests_result = mysqli_query($confirmed_guests_query);
-	$confirmed_guests
-	//
+	$confirmed_guests = array();
+	$gift_receivers = array();
+	
+	// Arrayify!
+	while($guest = mysqli_fetch_assoc($confirmed_guests_result)){
+		array_push($confirmed_guests, $guest);
+		array_push($gift_receivers, $guest["invitation_id"]);
+	}
+
+	// Now shift the $gift_receivers array so that the first confirmed
+	// guest gives to the second confirmed guest, etc., until the last
+	// confirmed guest gives to the first confirmed guest.
+	$first_guest = array_shift($gift_receivers);
+	array_push($gift_receivers, $first_guest);
+
+	// Now assign them to each other
+	$giving_assignments = array();
+	$limit = count($confirmed_guests);
+
+	for($i = 0; $i < $limit; $i++){
+		$giving_assignments[$confirmed_guests[$i]] = $gift_receivers[$i];
+	}
+
+	return $giving_assignments;
 }
 
 ?>
