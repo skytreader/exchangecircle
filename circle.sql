@@ -11,6 +11,6 @@ CREATE TABLE invited(
 	name VARCHAR(255) NOT NULL,
 	email VARCHAR(50),
 	confirmation_code CHAR(255) UNIQUE NOT NULL,
-	date_confirmed TIMESTAMP,
+	date_confirmed TIMESTAMP DEFAULT NULL,
 	PRIMARY KEY invitation_id
 ) ENGINE=INNODB;
