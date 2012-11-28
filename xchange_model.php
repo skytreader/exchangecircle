@@ -49,6 +49,20 @@ function rsvp($connection, $invitation_id, $email){
 }
 
 /**
+Call after confirm().
+*/
+function mail_confirmation_ack($connection, $invitation_id){
+	$email_query = mysqli_real_escape_string("SELECT email, name FROM invited WHERE invitation_id = $invitation_id LIMIT 1;");
+	$email_query_result = mysqli_query($email_query);
+	$email_result = mysqli_fetch_array($email_query_result);
+	$email = $email_resut["email"];
+	$name = $email_result["name"];
+
+	$mail_message = "Hi $name! Thanks for confirming. You will now be part of the exchange gift. Hindi ka na kawawa.";
+	mail($email, "You have confirmed your RSVP", wordwrap($mail_message, 70));
+}
+
+/**
 Called when a guest confirms via email. Guests should finish confirmation
 before the set confirmation deadline (in event_settings table).
 
