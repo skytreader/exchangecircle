@@ -6,6 +6,7 @@ with the tables in circle.sql on it.
 */
 
 define(CONFIRMATION_CODE_LENGTH, 255);
+define(APP_URL, "http://party.skytreader.net/");
 
 function generate_confirmation_code(){
 	return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, CONFIRMATION_CODE_LENGTH);
@@ -30,9 +31,21 @@ Called when a guest confirms attendance to the event.
 
 Send an email to the guest with a confirmation code. Only when
 the guest confirms through this is he considered "attending".
+
+Returns the return of the mail function.
 */
 function rsvp($connection, $invitation_id, $email){
-	// TODO implement!
+	// Get the confirmation code for the invitation id
+	$confcode_query = mysqli_real_escape_string("SELECT confirmation_code, name FROM invited WHERE invitation_id = $invitation_id LIMIT 1;");
+	$confcode_query_result = mysqli_query($connection, $confcode_query);
+	$confcode_result = mysqli_fetch_assoc($confcode_query_result);
+	$confcode = $confcode_result["confirmation_code"];
+	$name = $confcode_result["name"];
+	
+	// FIXME UX Bug. Isn't it weird to get a message saying "Hi Chad Estioco!"?
+	$mail_message = "Hi $name! You still need to confirm your RSVP. Please visit " . APP_URL . "/confirm.php?cc=$confcode . If you don't confirm, you will not be considered for the exchange gift. Kawawa ka naman.";
+	// TODO Add headers for fun and fancy stuff!
+	mail($email, "Your RSVP needs confirmation", wordwrap($mail_message, 70));
 }
 
 /**
