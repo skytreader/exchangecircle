@@ -1,6 +1,13 @@
 <?php
 	// ALWAYS COMMIT 
-	$db_connection = mysqli_connect
+	include("constants.php");
+	$db_connection = mysqli_connect(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+
+	if(mysqli_connect_errno()){
+		// TODO Better error handling.
+		echo "Connection failed.";
+		exit();
+	}
 ?>
 <html>
 	<head>
