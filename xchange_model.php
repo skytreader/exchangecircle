@@ -53,7 +53,7 @@ Call after confirm().
 */
 function mail_confirmation_ack($connection, $invitation_id){
 	$email_query = mysqli_real_escape_string("SELECT email, name FROM invited WHERE invitation_id = $invitation_id LIMIT 1;");
-	$email_query_result = mysqli_query($email_query);
+	$email_query_result = mysqli_query($connection, $email_query);
 	$email_result = mysqli_fetch_array($email_query_result);
 	$email = $email_resut["email"];
 	$name = $email_result["name"];
@@ -103,7 +103,7 @@ to the person corresponding to the invitation_id in the value.
 function assign_pairings($connection){
 	// A guest has confirmed iff the date_confirmed field is not null
 	$confirmed_guests_query = mysqli_real_escape_string("SELECT invitation_id, email FROM invited WHERE date_confirmed IS NOT NULL;");
-	$confirmed_guests_result = mysqli_query($confirmed_guests_query);
+	$confirmed_guests_result = mysqli_query($connection, $confirmed_guests_query);
 	$confirmed_guests = array();
 	$gift_receivers = array();
 	
@@ -130,4 +130,19 @@ function assign_pairings($connection){
 	return $giving_assignments;
 }
 
+/**
+Checks whether there is an event in the database.
+
+(Note that we assume that the event_settings table assumes that there is
+one and only one record in it---the current event. This function puts
+priority to whatever record is fetched first.)
+
+Returns an associative array containing the first row fetched from the
+event_settings table.
+*/
+function check_set_event($connection){
+	$event_check_query = mysqli_real_escape_string("SELECT * FROM event_settings LIMIT 1;");
+	$event_check_result = mysqli_query($connection, $event_check_query);
+	return mysqli_fetch_assoc($event_check_result);
+}
 ?>
